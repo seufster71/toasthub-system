@@ -36,7 +36,6 @@ import org.toasthub.core.preference.model.AppCachePageUtil;
 import org.toasthub.core.serviceCrawler.MicroServiceClient;
 import org.toasthub.security.common.SecurityUtils;
 import org.toasthub.security.model.MyUserPrincipal;
-import org.toasthub.security.model.UserContext;
 
 @RestController()
 @RequestMapping("/api/system")
