@@ -24,7 +24,7 @@ import org.toasthub.core.general.handler.ServiceProcessor;
 import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
-import org.toasthub.core.preference.model.AppCachePageUtil;
+import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.security.application.ApplicationSvcImpl;
 import org.toasthub.security.model.Application;
 
@@ -36,7 +36,7 @@ public class ApplicationAdminSvcImpl extends ApplicationSvcImpl implements Servi
 	ApplicationAdminDao applicationAdminDao;
 	
 	@Autowired 
-	AppCachePageUtil appCachePageUtil;
+	PrefCacheUtil prefCacheUtil;
 	
 	@Autowired 
 	UtilSvc utilSvc;
@@ -49,7 +49,7 @@ public class ApplicationAdminSvcImpl extends ApplicationSvcImpl implements Servi
 		switch (action) {
 		case "INIT":
 			request.addParam("appPageParamLoc", "response");
-			appCachePageUtil.getPageInfo(request,response);
+			prefCacheUtil.getPrefInfo(request,response);
 			this.itemCount(request, response);
 			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
 			if (count != null && count > 0){
@@ -59,7 +59,7 @@ public class ApplicationAdminSvcImpl extends ApplicationSvcImpl implements Servi
 			break;
 		case "LIST":
 			request.addParam("appPageParamLoc", "response");
-			appCachePageUtil.getPageInfo(request,response);
+			prefCacheUtil.getPrefInfo(request,response);
 			this.itemCount(request, response);
 			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
 			if (count != null && count > 0){
@@ -74,7 +74,7 @@ public class ApplicationAdminSvcImpl extends ApplicationSvcImpl implements Servi
 			this.delete(request, response);
 			break;
 		case "SAVE":
-			appCachePageUtil.getPageInfo(request,response);
+			prefCacheUtil.getPrefInfo(request,response);
 			this.save(request, response);
 			break;
 		default:

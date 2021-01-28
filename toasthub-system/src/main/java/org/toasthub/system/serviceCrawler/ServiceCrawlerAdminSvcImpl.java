@@ -14,26 +14,37 @@
  * limitations under the License.
  */
 
-package org.toasthub.system.clientDomain;
+package org.toasthub.system.serviceCrawler;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.toasthub.core.general.handler.ServiceProcessor;
 import org.toasthub.core.general.model.GlobalConstant;
+import org.toasthub.core.general.model.ServiceClass;
+import org.toasthub.core.general.model.AppCacheServiceCrawler;
+import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.core.serviceCrawler.ServiceCrawlerSvcImpl;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
-import org.toasthub.core.preference.model.PrefCacheUtil;
-import org.toasthub.core.system.model.ClientDomain;
-import org.toasthub.core.system.service.ClientDomainSvcImpl;
 
-@Service("ClientDomainAdminSvc")
-public class ClientDomainAdminSvcImpl extends ClientDomainSvcImpl implements ServiceProcessor, ClientDomainAdminSvc {
+@Service("ServiceCrawlerAdminSvc")
+public class ServiceCrawlerAdminSvcImpl extends ServiceCrawlerSvcImpl implements ServiceProcessor, ServiceCrawlerAdminSvc {
 
 	@Autowired 
-	ClientDomainAdminDao clientDomainAdminDao;
+	@Qualifier("ServiceCrawlerAdminDao")
+	ServiceCrawlerAdminDao serviceCrawlerAdminDao;
 	
 	@Autowired 
 	PrefCacheUtil prefCacheUtil;
+	
+	@Autowired 
+	AppCacheServiceCrawler serviceCrawler;
 	
 	@Override
 	public void process(RestRequest request, RestResponse response) {
@@ -42,32 +53,38 @@ public class ClientDomainAdminSvcImpl extends ClientDomainSvcImpl implements Ser
 		Long count = 0l;
 		switch (action) {
 		case "INIT":
-			request.addParam("appPageParamLoc", "response");
-			prefCacheUtil.getPrefInfo(request,response);
-			this.itemCount(request, response);
-			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
-			if (count != null && count > 0){
-				items(request, response);
-			}
-			response.addParam(GlobalConstant.ITEMNAME, request.getParam(GlobalConstant.ITEMNAME));
-			break;
-		case "LIST":
-			request.addParam("appPageParamLoc", "response");
+			this.initParams(request);
+			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
 			prefCacheUtil.getPrefInfo(request,response);
 			this.itemCount(request, response);
 			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
 			if (count != null && count > 0){
 				this.items(request, response);
 			}
-			response.addParam(GlobalConstant.ITEMNAME, request.getParam(GlobalConstant.ITEMNAME));
 			break;
-		case "SHOW":
+		case "LIST":
+			this.initParams(request);
+			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
+			prefCacheUtil.getPrefInfo(request,response);
+			this.itemCount(request, response);
+			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
+			if (count != null && count > 0){
+				this.items(request, response);
+			}
+			break;
+		case "ITEM":
+			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
+			prefCacheUtil.getPrefInfo(request,response);
 			this.item(request, response);
 			break;
 		case "DELETE":
 			this.delete(request, response);
 			break;
 		case "SAVE":
+			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
+				List<String> forms =  new ArrayList<String>(Arrays.asList("ADMIN_SERVICES_FORM"));
+				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
+			}
 			prefCacheUtil.getPrefInfo(request,response);
 			this.save(request, response);
 			break;
@@ -75,15 +92,14 @@ public class ClientDomainAdminSvcImpl extends ClientDomainSvcImpl implements Ser
 			utilSvc.addStatus(RestResponse.INFO, RestResponse.ACTIONNOTEXIST, "Action not available", response);
 			break;
 		}
-		
 	}
 
-	
 	//@Authorize
 	public void delete(RestRequest request, RestResponse response) {
 		try {
-			clientDomainAdminDao.delete(request, response);
-			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, "Delete Successful", response);
+			serviceCrawlerAdminDao.delete(request, response);
+			// reset cache
+			serviceCrawler.reloadServiceCache();
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Delete Failed", response);
 			e.printStackTrace();
@@ -101,24 +117,29 @@ public class ClientDomainAdminSvcImpl extends ClientDomainSvcImpl implements Ser
 				return;
 			}
 			// get existing item
-			if (request.containsParam(GlobalConstant.ITEMID) && !request.getParam(GlobalConstant.ITEMID).equals("")) {
-				clientDomainDao.item(request, response);
+			Map<String,Object> inputList = (Map<String, Object>) request.getParam(GlobalConstant.INPUTFIELDS);
+			if (inputList.containsKey(GlobalConstant.ITEMID) && inputList.get(GlobalConstant.ITEMID) != null && !"".equals(inputList.get(GlobalConstant.ITEMID))) {
+				request.addParam(GlobalConstant.ITEMID, inputList.get(GlobalConstant.ITEMID));
+				serviceCrawlerAdminDao.item(request, response);
 				request.addParam(GlobalConstant.ITEM, response.getParam(GlobalConstant.ITEM));
 				response.getParams().remove(GlobalConstant.ITEM);
 			} else {
-				request.addParam(GlobalConstant.ITEM, new ClientDomain());
+				request.addParam(GlobalConstant.ITEM, new ServiceClass());
 			}
-			
 			// marshall
 			utilSvc.marshallFields(request, response);
 			
 			// save
-			clientDomainAdminDao.save(request, response);
+			serviceCrawlerAdminDao.save(request, response);
+
+			// reset cache
+			serviceCrawler.reloadServiceCache();
 			
-			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, "Save Successful", response);
+			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, prefCacheUtil.getPrefText( "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_SUCCESS", prefCacheUtil.getLang(request)), response);
 		} catch (Exception e) {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Save Failed", response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, prefCacheUtil.getPrefText( "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_FAIL", prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();
 		}
 	} // save
+	
 }

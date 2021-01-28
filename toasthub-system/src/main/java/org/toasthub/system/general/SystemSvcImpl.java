@@ -38,7 +38,7 @@ import org.toasthub.core.general.model.MenuItem;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.menu.MenuSvc;
-import org.toasthub.core.preference.model.AppCachePageUtil;
+import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.security.model.User;
 import org.toasthub.security.model.UserContext;
 import org.toasthub.security.users.UsersDao;
@@ -57,7 +57,7 @@ public class SystemSvcImpl implements ServiceProcessor, SystemSvc {
 	MenuSvc menuSvc;
 	
 	@Autowired 
-	AppCachePageUtil appCachePageUtil;
+	PrefCacheUtil prefCacheUtil;
 	
 	@Autowired
 	@Qualifier("UsersDao")
@@ -92,7 +92,7 @@ public class SystemSvcImpl implements ServiceProcessor, SystemSvc {
 		switch (action) {
 		case "INIT":
 			request.addParam("appPageParamLoc", "response");
-			appCachePageUtil.getPageInfo(request,response);
+			prefCacheUtil.getPrefInfo(request,response);
 			
 			// get menus
 			if (request.containsParam(GlobalConstant.MENUNAMES)){
@@ -106,11 +106,11 @@ public class SystemSvcImpl implements ServiceProcessor, SystemSvc {
 			break;
 		case "INIT_PROFILE":
 			request.addParam("appPageParamLoc", "response");
-			appCachePageUtil.getPageInfo(request,response);
+			prefCacheUtil.getPrefInfo(request,response);
 			this.initProfile(request,response);
 			break;
 		case "SAVE_PROFILE":
-			appCachePageUtil.getPageInfo(request,response);
+			prefCacheUtil.getPrefInfo(request,response);
 			this.saveProfile(request,response);
 			break;
 		case "CHECK":
