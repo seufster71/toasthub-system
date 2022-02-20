@@ -49,11 +49,11 @@ public class ServiceCrawlerAdminSvcImpl extends ServiceCrawlerSvcImpl implements
 	@Override
 	public void process(RestRequest request, RestResponse response) {
 		String action = (String) request.getParams().get(GlobalConstant.ACTION);
+		List<String> global =  new ArrayList<String>(Arrays.asList("LANGUAGES"));
 		
 		Long count = 0l;
 		switch (action) {
 		case "INIT":
-			this.initParams(request);
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
 			prefCacheUtil.getPrefInfo(request,response);
 			this.itemCount(request, response);
@@ -63,7 +63,6 @@ public class ServiceCrawlerAdminSvcImpl extends ServiceCrawlerSvcImpl implements
 			}
 			break;
 		case "LIST":
-			this.initParams(request);
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
 			prefCacheUtil.getPrefInfo(request,response);
 			this.itemCount(request, response);
@@ -85,6 +84,7 @@ public class ServiceCrawlerAdminSvcImpl extends ServiceCrawlerSvcImpl implements
 				List<String> forms =  new ArrayList<String>(Arrays.asList("ADMIN_SERVICES_FORM"));
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
+			request.addParam(PrefCacheUtil.PREFGLOBAL, global);
 			prefCacheUtil.getPrefInfo(request,response);
 			this.save(request, response);
 			break;

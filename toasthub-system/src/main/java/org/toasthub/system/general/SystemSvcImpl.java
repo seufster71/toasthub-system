@@ -39,6 +39,7 @@ import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.menu.MenuSvc;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.security.model.MyUserPrincipal;
 import org.toasthub.security.model.User;
 import org.toasthub.security.model.UserContext;
 import org.toasthub.security.users.UsersDao;
@@ -81,13 +82,7 @@ public class SystemSvcImpl implements ServiceProcessor, SystemSvc {
 		
 		this.setupDefaults(request);
 		//appCachePage.getPageInfo(request,response);
-		User user = null;
-		String name = "";
-		if (userContext != null && userContext.getCurrentUser() != null){
-			user = userContext.getCurrentUser();
-		} else {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "User is not authenticated", response);
-		}
+
 		
 		switch (action) {
 		case "INIT":
@@ -98,7 +93,7 @@ public class SystemSvcImpl implements ServiceProcessor, SystemSvc {
 			if (request.containsParam(GlobalConstant.MENUNAMES)){
 				this.initMenu(request, response);
 			}
-			response.addParam("USER", user);
+			response.addParam("USER",  ((MyUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser());
 			break;
 		case "INIT_MENU":
 			this.setMenuDefaults(request);

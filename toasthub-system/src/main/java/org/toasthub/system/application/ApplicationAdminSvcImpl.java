@@ -16,6 +16,10 @@
 
 package org.toasthub.system.application;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -44,36 +48,42 @@ public class ApplicationAdminSvcImpl extends ApplicationSvcImpl implements Servi
 	@Override
 	public void process(RestRequest request, RestResponse response) {
 		String action = (String) request.getParams().get(GlobalConstant.ACTION);
+		List<String> global =  new ArrayList<String>(Arrays.asList("LANGUAGES"));
 		
 		Long count = 0l;
 		switch (action) {
 		case "INIT":
-			request.addParam("appPageParamLoc", "response");
+			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
 			prefCacheUtil.getPrefInfo(request,response);
 			this.itemCount(request, response);
 			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
 			if (count != null && count > 0){
 				items(request, response);
 			}
-			response.addParam(GlobalConstant.ITEMNAME, request.getParam(GlobalConstant.ITEMNAME));
 			break;
 		case "LIST":
-			request.addParam("appPageParamLoc", "response");
+			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
 			prefCacheUtil.getPrefInfo(request,response);
 			this.itemCount(request, response);
 			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
 			if (count != null && count > 0){
 				this.items(request, response);
 			}
-			response.addParam(GlobalConstant.ITEMNAME, request.getParam(GlobalConstant.ITEMNAME));
 			break;
-		case "SHOW":
+		case "ITEM":
+			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
+			prefCacheUtil.getPrefInfo(request,response);
 			this.item(request, response);
 			break;
 		case "DELETE":
 			this.delete(request, response);
 			break;
 		case "SAVE":
+			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
+				List<String> forms =  new ArrayList<String>(Arrays.asList("ADMIN_LANGUAGE_FORM"));
+				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
+			}
+			request.addParam(PrefCacheUtil.PREFGLOBAL, global);
 			prefCacheUtil.getPrefInfo(request,response);
 			this.save(request, response);
 			break;
