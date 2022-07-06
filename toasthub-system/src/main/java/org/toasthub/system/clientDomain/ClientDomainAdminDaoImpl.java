@@ -38,7 +38,7 @@ public class ClientDomainAdminDaoImpl extends ClientDomainDaoImpl implements Cli
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			ClientDomain clientDomain = (ClientDomain) entityManagerMainSvc.getEntityMgrMain().getReference(ClientDomain.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
+			ClientDomain clientDomain = (ClientDomain) entityManagerMainSvc.getEntityMgrMain().getReference(ClientDomain.class, request.getParamLong(GlobalConstant.ITEMID));
 			entityManagerMainSvc.getEntityMgrMain().remove(clientDomain);
 			
 		} else {

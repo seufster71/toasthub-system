@@ -37,7 +37,7 @@ public class ServiceCrawlerAdminDaoImpl extends ServiceCrawlerDaoImpl implements
 	@Override
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
-			ServiceClass serviceClass = (ServiceClass) entityManagerDataSvc.getInstance().getReference(ServiceClass.class, Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
+			ServiceClass serviceClass = (ServiceClass) entityManagerDataSvc.getInstance().getReference(ServiceClass.class, request.getParamLong(GlobalConstant.ITEMID));
 			entityManagerDataSvc.getInstance().remove(serviceClass);
 				
 			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, "Item deleted", response);

@@ -38,7 +38,7 @@ public class ApplicationAdminDaoImpl extends ApplicationDaoImpl implements Appli
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			Application application = (Application) entityManagerSecuritySvc.getInstance().getReference(Application.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
+			Application application = (Application) entityManagerSecuritySvc.getInstance().getReference(Application.class, request.getParamLong(GlobalConstant.ITEMID));
 			entityManagerSecuritySvc.getInstance().remove(application);
 			
 		} else {
