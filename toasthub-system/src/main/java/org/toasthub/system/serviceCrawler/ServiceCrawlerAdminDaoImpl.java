@@ -25,20 +25,20 @@ import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 
 @Repository("ServiceCrawlerAdminDao")
-@Transactional("TransactionManagerData")
+@Transactional("TransactionManagerMember")
 public class ServiceCrawlerAdminDaoImpl extends ServiceCrawlerDaoImpl implements ServiceCrawlerAdminDao {
 	
 	@Override
 	public void save(RestRequest request, RestResponse response) throws Exception {
 		ServiceClass serviceClass = (ServiceClass) request.getParam(GlobalConstant.ITEM);
-		entityManagerDataSvc.getInstance().merge(serviceClass);
+		entityManagerSvc.getInstance().merge(serviceClass);
 	}
 
 	@Override
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
-			ServiceClass serviceClass = (ServiceClass) entityManagerDataSvc.getInstance().getReference(ServiceClass.class, request.getParamLong(GlobalConstant.ITEMID));
-			entityManagerDataSvc.getInstance().remove(serviceClass);
+			ServiceClass serviceClass = (ServiceClass) entityManagerSvc.getInstance().getReference(ServiceClass.class, request.getParamLong(GlobalConstant.ITEMID));
+			entityManagerSvc.getInstance().remove(serviceClass);
 				
 			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, "Item deleted", response);
 		} else {
